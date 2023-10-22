@@ -4,42 +4,47 @@
 
     namespace Stui\AbaNinja;
 
+    use JetBrains\PhpStorm\ArrayShape;
     use Stui\AbaNinja\Enums\HttpMethod;
     use Stui\AbaNinja\Exceptions\AuthenticationException;
     use Stui\AbaNinja\Exceptions\ResponseException;
+    use Stui\AbaNinja\Exceptions\ScopeException;
 
     class Client
     {
-        public const BASE_URI = 'https://api.abaninja.ch';
+        public string $baseUrl;
 
         public function __construct(
             private string $apiKey
         )
         {
+            $this->baseUrl = $_ENV['ABANINJA_API_BASE_URL'] ?? 'https://api.abaninja.ch';
         }
 
         /**
          * @throws AuthenticationException
          * @throws ResponseException
+         * @throws ScopeException
          */
-        public function send(string $url, array $data, HttpMethod $method): array
+        #[ArrayShape(['httpCode' => 'int', 'response' => 'stdClass'])]
+        public function send(string $url, array $data = [], HttpMethod $method = HttpMethod::GET): array
         {
-            $url = str_starts_with($url, 'https') ? $url : self::BASE_URI . (
-                str_starts_with($url, '/') ?: '/'
+            $url = str_starts_with($url, 'https') ? $url : $this->baseUrl . (
+                (str_starts_with($url, '/') ? '' : '/') . $url
             );
             switch ($method) {
                 case HttpMethod::DELETE:
                 case HttpMethod::GET:
-                    $url = $data !== [] ? $url . http_build_query($data) : $url;
+                    $url = $data !== [] ? $url . '?' . http_build_query($data) : $url;
                     break;
             }
             $apiRequest = curl_init($url);
-            curl_setopt($apiRequest, CURLOPT_HTTPHEADER, array(
+            curl_setopt($apiRequest, CURLOPT_HTTPHEADER, [
                     "Authorization: Bearer " . $this->getApiKey(),
                     "Content-Type: application/json"
-                )
+                ]
             );
-            switch ($method){
+            switch ($method) {
                 case HttpMethod::POST:
                     curl_setopt($apiRequest, CURLOPT_POST, true);
                     curl_setopt($apiRequest, CURLOPT_POSTFIELDS, json_encode($data));
@@ -56,20 +61,22 @@
             $response = curl_exec($apiRequest);
             $responseCode = curl_getinfo($apiRequest, CURLINFO_HTTP_CODE);
 
-            if(json_encode(json_decode($response)) !== $response){
-                throw new ResponseException('API returned invalid JSON response', 9901);
+            if (is_string($response)) {
+                if (json_encode(json_decode($response)) !== $response) {
+                    throw new ResponseException('API returned invalid JSON response', 9901);
+                }
+                $response = json_decode($response);
             }
-            switch($responseCode){
-                case 400:
-                    var_dump($response);
-                    throw new ResponseException('The sent request could not be understood by the API.', 9903);
+            switch ($responseCode) {
                 case 401:
-                    throw new AuthenticationException('Could not authenticate. Please check your API key.', 9902);
+                    throw new AuthenticationException('Could not authenticate. Please check your API token.', 9902);
+                case 403:
+                    throw new ScopeException('The provided API token does not fulfill the required scope requirements.', 9903);
                 case 404:
                     throw new ResponseException('The requested resource could not be found by the API.', 9904);
             }
 
-            return ['httpCode' => $responseCode, 'response' => json_decode($response, true)];
+            return ['httpCode' => $responseCode, 'response' => $response];
         }
 
         /**

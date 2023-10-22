@@ -1,16 +1,7 @@
 # Featureset
-| Status | Function | Release |
-| --- | --- | --- |
-| | **Incidents** | |
-| ✅ | Create a new live Incident | [API Reference](https://developer.statuspage.io/#operation/postPagesPageIdIncidents) |
-| 🔲 | Get list of incidents | [API Reference](https://developer.statuspage.io/#operation/getPagesPageIdIncidents) |
-| 🔲 | Get list of active incidents | [API Reference](https://developer.statuspage.io/#operation/getPagesPageIdIncidentsActiveMaintenance) |
-| 🔲 | Get list of upcoming incidents | [API Reference](https://developer.statuspage.io/#operation/getPagesPageIdIncidentsUpcoming) |
-| 🔲 | Get list of scheduled incidents | [API Reference](https://developer.statuspage.io/#operation/getPagesPageIdIncidentsScheduled) |
-| 🔲 | Get list of unresolved incidents | [API Reference](https://developer.statuspage.io/#operation/getPagesPageIdIncidentsUnresolved) |
-| ✅ | Delete an incident | [API Reference](https://developer.statuspage.io/#operation/deletePagesPageIdIncidentsIncidentId) |
-| 🔲 | Update an incident | [API Reference](https://developer.statuspage.io/#operation/patchPagesPageIdIncidentsIncidentId) |
-| ✅ | Get an incident | [API Reference](https://developer.statuspage.io/#operation/getPagesPageIdIncidentsIncidentId) |
-| ✅ | Schedule Maintenance | [API Reference](https://developer.statuspage.io/#operation/postPagesPageIdIncidents) |
-| ✅ | Schedule Incident | [API Reference](https://developer.statuspage.io/#operation/postPagesPageIdIncidents) |
-| ✅ | Backfill old Incident | [API Reference](https://developer.statuspage.io/#operation/postPagesPageIdIncidents) |
+
+## Addresses
+
+| Status | Function                                          | SDK Syntax                                                                 | Reference                                                                                                                                                                                           | Release |
+|--------|---------------------------------------------------|----------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| ✅      | Check if the customerNumber already in use or not | Address::checkCustomerNumber(<br/>&nbsp;&nbsp;string $customerNumber<br/>) | [API Docs](https://www.abaninja.ch/apidocs/?_ga=2.120361999.601927649.1698009213-1163541967.1689942100#tag/Addresses/paths/~1accounts~1%7BaccountUuid%7D~1addresses~1v2~1check-customer-number/get) | v0.0.1  | 
