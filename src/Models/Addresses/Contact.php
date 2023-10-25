@@ -5,7 +5,7 @@ namespace Stui\AbaNinja\Models\Addresses;
 use stdClass;
 use Stui\AbaNinja\Enums\ContactType;
 
-class Contact
+class Contact implements \JsonSerializable
 {
     public ContactType $type;
     public string $value;
@@ -21,5 +21,30 @@ class Contact
         $contact->isPrimary = $data->is_primary;
 
         return $contact;
+    }
+
+    public static function fillAll(array $data): array
+    {
+        $contacts = [];
+
+        foreach ($data as $entry) {
+            $contacts[] = self::fill($entry);
+        }
+
+        return $contacts;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'type' => $this->type->value,
+            'value' => $this->value,
+            'primary' => $this->isPrimary
+        ];
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return $this->toArray();
     }
 }
