@@ -12,13 +12,11 @@
 
     class Client
     {
-        public string $baseUrl;
-
         public function __construct(
-            private string $apiKey
+            private string $apiKey,
+            private readonly string $baseUrl = 'https://api.abaninja.ch'
         )
         {
-            $this->baseUrl = $_ENV['ABANINJA_API_BASE_URL'] ?? 'https://api.abaninja.ch';
         }
 
         /**

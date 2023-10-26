@@ -11,7 +11,8 @@ $dotenv = Dotenv::createImmutable('../../');
 $dotenv->load();
 
 $client = new Client(
-    apiKey: $_ENV['API_KEY']
+    apiKey: $_ENV['API_KEY'],
+    baseUrl: $_ENV['ABANINJA_API_BASE_URL'] // if you want to override the standard API URL
 );
 
 $addressService = new Addresses($client, $_ENV['ACCOUNT_UUID']);

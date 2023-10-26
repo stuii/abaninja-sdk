@@ -18,20 +18,13 @@ class Documents
     {
     }
 
-    public function importInvoice(InvoiceImport $invoice)
+    public function importInvoice(InvoiceImport $invoice): void
     {
-/*        if (count($company->getAddresses()) < 1) {
-            throw new RequiredDataMissingException('At least one address must be specified', 1302);
-        }*/
-        $r = ['documents' => [$invoice->jsonSerialize()]];
         $response = $this->client->send(
             url: '/accounts/' . $this->accountUuid . '/documents/v2/invoices/import',
-            data: $r,
+            data: ['documents' => [$invoice->jsonSerialize()]],
             method: HttpMethod::POST
         );
-
-        var_dump($response);
-        echo json_encode($r);
 
         // TODO: response
     }
