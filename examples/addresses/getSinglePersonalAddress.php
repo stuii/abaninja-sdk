@@ -18,7 +18,7 @@ $client = new Client(
 $addressService = new Addresses($client, $_ENV['ACCOUNT_UUID']);
 
 try {
-    $companyAddresses = $addressService->getCompanyAddressList();
+    $address = $addressService->getSinglePrivateAddress($_ENV['PERSON_UUID']);
 } catch (AbaNinjaException $e){
     echo $e->getMessage();
 }

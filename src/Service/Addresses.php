@@ -157,4 +157,14 @@ class Addresses
 
         return Person::fill($response['response']->data);
     }
+
+    public function getSinglePrivateAddress(string $personUuid): Person
+    {
+        $response = $this->client->send(
+            url: '/accounts/' . $this->accountUuid . '/addresses/v2/persons/' . $personUuid,
+            method: HttpMethod::GET
+        );
+
+        return Person::fill($response['response']->data);
+    }
 }

@@ -2,8 +2,9 @@
 
 use Dotenv\Dotenv;
 use Stui\AbaNinja\Client;
+use Stui\AbaNinja\Enums\DocumentAction;
 use Stui\AbaNinja\Exceptions\AbaNinjaException;
-use Stui\AbaNinja\Service\Addresses;
+use Stui\AbaNinja\Service\Documents;
 
 require '../../vendor/autoload.php';
 
@@ -15,10 +16,11 @@ $client = new Client(
     baseUrl: $_ENV['ABANINJA_API_BASE_URL'] // if you want to override the standard API URL
 );
 
-$addressService = new Addresses($client, $_ENV['ACCOUNT_UUID']);
+$documentsService = new Documents($client, $_ENV['ACCOUNT_UUID']);
 
 try {
-    $companyAddresses = $addressService->getCompanyAddressList();
+    $invoice = $documentsService->getInvoiceByUuid($_ENV['INVOICE_UUID']);
+    $documentsService->executeAction($invoice, DocumentAction::MARK_AS_SENT);
 } catch (AbaNinjaException $e){
     echo $e->getMessage();
 }

@@ -18,11 +18,11 @@ class Person implements \JsonSerializable
     public ?string $language = null;
     /** @var array<string> $tags */
     public array $tags = [];
-    /** @var array<Contact> $contacts */
-    private array $contacts = [];
+    /** @var null|array<Contact> $contacts */
+    private ?array $contacts = [];
 
-    /** @var array<Address> $addresses */
-    private array $addresses = [];
+    /** @var null|array<Address> $addresses */
+    private ?array $addresses = [];
 
     public ?string $privateNotes = null;
     public ?bool $automaticDunning = null;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Stui\AbaNinja\Enums;
 
-use Stui\AbaNinja\Models\Documents\InvoiceReceiver;
+use Stui\AbaNinja\Models\Documents\Invoices\Elements\InvoiceReceiver;
 
 enum InvoiceReceiverType
 {
@@ -16,16 +16,16 @@ enum InvoiceReceiverType
     {
         return match ($this) {
             self::PERSON => [
-                'addressUuid' => $receiver->address->uuid,
-                'personUuid' => $receiver->person->uuid,
-                'deliveryAddressUuid' => $receiver->deliveryAddress?->uuid,
+                'addressUuid' => $receiver->addressUuid,
+                'personUuid' => $receiver->personUuid,
+                'deliveryAddressUuid' => $receiver->deliveryAddressUuid,
             ],
 
             self::COMPANY => [
-                'addressUuid' => $receiver->address->uuid,
-                'companyUuid' => $receiver->company->uuid,
-                'contactPersonUuid' => $receiver->contactPerson?->uuid,
-                'deliveryAddressUuid' => $receiver->deliveryAddress?->uuid,
+                'addressUuid' => $receiver->addressUuid,
+                'companyUuid' => $receiver->companyUuid,
+                'contactPersonUuid' => $receiver->contactPersonUuid,
+                'deliveryAddressUuid' => $receiver->deliveryAddressUuid,
                 'additionalReceivers' => $receiver->additionalReceivers
             ],
 

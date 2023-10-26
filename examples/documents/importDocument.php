@@ -3,11 +3,10 @@
 use Dotenv\Dotenv;
 use Stui\AbaNinja\Client;
 use Stui\AbaNinja\Exceptions\AbaNinjaException;
-use Stui\AbaNinja\Models\Documents\InvoiceImport;
-use Stui\AbaNinja\Models\Documents\InvoiceReceiver;
+use Stui\AbaNinja\Models\Documents\Invoices\Elements\InvoiceReceiver;
+use Stui\AbaNinja\Models\Documents\Invoices\Elements\TaxPosition;
+use Stui\AbaNinja\Models\Documents\Invoices\InvoiceImport;
 use Stui\AbaNinja\Models\Documents\PaymentInstructions\QrIbanPaymentInstructions;
-use Stui\AbaNinja\Models\Documents\TaxPosition;
-use Stui\AbaNinja\Service\Addresses;
 use Stui\AbaNinja\Service\Documents;
 
 require '../../vendor/autoload.php';

@@ -9,6 +9,7 @@
     use Stui\AbaNinja\Exceptions\AuthenticationException;
     use Stui\AbaNinja\Exceptions\ResponseException;
     use Stui\AbaNinja\Exceptions\ScopeException;
+    use Stui\AbaNinja\Exceptions\UnexpectedErrorException;
 
     class Client
     {
@@ -23,6 +24,7 @@
          * @throws AuthenticationException
          * @throws ResponseException
          * @throws ScopeException
+         * @throws UnexpectedErrorException
          */
         #[ArrayShape(['httpCode' => 'int', 'response' => 'stdClass'])]
         public function send(string $url, array $data = [], HttpMethod $method = HttpMethod::GET): array
@@ -72,6 +74,10 @@
                     throw new ScopeException('The provided API token does not fulfill the required scope requirements.', 9903);
                 case 404:
                     throw new ResponseException('The requested resource could not be found by the API.', 9904);
+                case 500:
+                    $e = new UnexpectedErrorException('The API returned an unexpected error.', 9905);
+                    $e->setData($response);
+                    throw $e;
             }
 
             return ['httpCode' => $responseCode, 'response' => $response];
