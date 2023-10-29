@@ -95,7 +95,7 @@ class InvoiceReceiver implements JsonSerializable
             if (isset($data->additionalReceivers)) {
                 $receiver->additionalReceivers = $data->additionalReceivers;
             }
-        } else if (isset($receiver->addressUuid) && isset($receiver->personUuid)) {
+        } else if (isset($data->addressUuid) && isset($data->personUuid)) {
             $receiver->type = InvoiceReceiverType::PERSON;
             $receiver->addressUuid = $data->addressUuid;
             $receiver->personUuid = $data->personUuid;
