@@ -14,24 +14,36 @@ enum InvoiceReceiverType
 
     public function getRequestArray(InvoiceReceiver $receiver): array
     {
-        return match ($this) {
-            self::PERSON => [
-                'addressUuid' => $receiver->addressUuid,
-                'personUuid' => $receiver->personUuid,
-                'deliveryAddressUuid' => $receiver->deliveryAddressUuid,
-            ],
+        switch ($this) {
+            case self::PERSON:
+                $data = [
+                    'addressUuid' => $receiver->addressUuid,
+                    'personUuid' => $receiver->personUuid,
+                ];
+                break;
 
-            self::COMPANY => [
-                'addressUuid' => $receiver->addressUuid,
-                'companyUuid' => $receiver->companyUuid,
-                'contactPersonUuid' => $receiver->contactPersonUuid,
-                'deliveryAddressUuid' => $receiver->deliveryAddressUuid,
-                'additionalReceivers' => $receiver->additionalReceivers
-            ],
+            case self::COMPANY:
+                $data = [
+                    'addressUuid' => $receiver->addressUuid,
+                    'companyUuid' => $receiver->companyUuid,
+                ];
+                if (!is_null($receiver->deliveryAddressUuid)) {
+                    $data['deliveryAddressUuid'] = $receiver->deliveryAddressUuid;
+                }
+                if (!is_null($receiver->contactPersonUuid)) {
+                    $data['contactPersonUuid'] = $receiver->contactPersonUuid;
+                }
+                if (count($receiver->additionalReceivers) > 0) {
+                    $data['additionalReceivers'] = $receiver->additionalReceivers;
+                }
+                break;
 
-            self::CUSTOMER_NUMBER => [
-                'customerNumber' => $receiver->customerNumber
-            ]
-        };
+            case self::CUSTOMER_NUMBER:
+                $data = [
+                    'customerNumber' => $receiver->customerNumber
+                ];
+                break;
+        }
+        return $data;
     }
 }
