@@ -23,7 +23,7 @@ class Documents
     {
     }
 
-    public function importInvoice(InvoiceImport $invoice): void
+    public function importInvoice(InvoiceImport $invoice): InvoiceImport
     {
         $response = $this->client->send(
             url: '/accounts/' . $this->accountUuid . '/documents/v2/invoices/import',
@@ -31,7 +31,9 @@ class Documents
             method: HttpMethod::POST
         );
 
-        // TODO: response
+        $invoice = InvoiceImport::fill($response['response']->data);
+
+        return $invoice;
     }
 
     public function getInvoiceByUuid(string $uuid): Invoice
