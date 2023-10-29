@@ -29,8 +29,9 @@ $receiver = new InvoiceReceiver();
 $receiver->setCustomerNumber('A0001');
 $document->receiver = $receiver;
 
+$date = new DateTime('2023-11-01');
 $document->invoiceDate = new DateTime('2023-11-01');
-$document->dueDate = new DateTime('2023-11-30');
+$document->dueDate = $date->add(new DateInterval('20d'));
 
 $paymentInstructions = new QrIbanPaymentInstructions();
 $paymentInstructions->qrIban = $_ENV['QR_IBAN'];

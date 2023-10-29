@@ -49,7 +49,7 @@ class Address implements JsonSerializable
 
     public function jsonSerialize(): array
     {
-        return [
+        $data = [
             'address' => $this->address ?? null,
             'street_number' => $this->streetNumber ?? null,
             'extension' => $this->extension ?? null,
@@ -59,5 +59,9 @@ class Address implements JsonSerializable
             'country_code' => $this->countryCode ?? null,
             'state' => is_string($this->state) ? $this->state : $this->state->value ?? null,
         ];
+        if (!is_null($this->uuid)) {
+            $data['uuid'] = $this->uuid;
+        }
+        return $data;
     }
 }
