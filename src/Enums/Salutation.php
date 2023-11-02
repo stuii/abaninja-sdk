@@ -7,6 +7,7 @@ namespace Stui\AbaNinja\Enums;
 enum Salutation: string
 {
     case MR = 'Mr';
+    case MRS = 'Mrs';
     case MS = 'Ms';
     case FAMILY = 'Family';
 }
