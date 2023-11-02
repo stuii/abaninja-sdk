@@ -13,7 +13,7 @@ class Person implements \JsonSerializable
     public AddressType $type;
     public string $firstName;
     public string $lastName;
-    public Salutation $salutation;
+    public ?Salutation $salutation = null;
     public ?string $currencyCode = null;
     public ?string $language = null;
     /** @var array<string> $tags */
