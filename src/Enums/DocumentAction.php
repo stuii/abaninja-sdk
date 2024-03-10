@@ -9,6 +9,7 @@ use stdClass;
 enum DocumentAction: string
 {
     case ARCHIVE = 'archive';
+    case ACTIVITY = 'activity';
     case RESTORE = 'restore';
     case CLONE = 'clone';
     case DELETE = 'delete';

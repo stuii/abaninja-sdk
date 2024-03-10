@@ -69,15 +69,17 @@
             }
             switch ($responseCode) {
                 case 401:
-                    throw new AuthenticationException('Could not authenticate. Please check your API token.', 9902);
+                    $e = new AuthenticationException('Could not authenticate. Please check your API token.', 9902);
                 case 403:
-                    throw new ScopeException('The provided API token does not fulfill the required scope requirements.', 9903);
+                    $e = new ScopeException('The provided API token does not fulfill the required scope requirements.', 9903);
                 case 404:
-                    throw new ResponseException('The requested resource could not be found by the API.', 9904);
+                    $e = new ResponseException('The requested resource could not be found by the API.', 9904);
                 case 500:
                     $e = new UnexpectedErrorException('The API returned an unexpected error.', 9905);
-                    $e->setData($response);
-                    throw $e;
+            }
+            if (isset($e)) {
+                $e->setData($response);
+                throw $e;
             }
 
             return ['httpCode' => $responseCode, 'response' => $response];
