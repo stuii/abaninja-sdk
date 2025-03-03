@@ -2,7 +2,7 @@
   "name": "stui/abaninja-sdk",
   "description": "SDK for the public AbaNinja API",
   "type": "library",
-  "license": "Apache-2.0",
+  "license": "GPL-3.0-or-later",
   "autoload": {
     "psr-4": {
       "Stui\\AbaNinja\\": "src/"
