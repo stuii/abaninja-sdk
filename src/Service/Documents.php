@@ -10,6 +10,8 @@ use Stui\AbaNinja\Enums\HttpMethod;
 use Stui\AbaNinja\Exceptions\AuthenticationException;
 use Stui\AbaNinja\Exceptions\ResponseException;
 use Stui\AbaNinja\Exceptions\ScopeException;
+use Stui\AbaNinja\Exceptions\UnexpectedErrorException;
+use Stui\AbaNinja\Exceptions\UnknownFormatException;
 use Stui\AbaNinja\Exceptions\WrongStateException;
 use Stui\AbaNinja\Models\Documents\Invoices\Invoice;
 use Stui\AbaNinja\Models\Documents\Invoices\InvoiceImport;
@@ -17,12 +19,19 @@ use Stui\AbaNinja\Models\Documents\Invoices\InvoiceImport;
 class Documents
 {
     public function __construct(
-        private Client $client,
-        private string $accountUuid
+        private readonly Client $client,
+        private readonly string $accountUuid
     )
     {
     }
 
+    /**
+     * @throws ResponseException
+     * @throws UnexpectedErrorException
+     * @throws ScopeException
+     * @throws AuthenticationException
+     * @throws UnknownFormatException
+     */
     public function importInvoice(InvoiceImport $invoice): InvoiceImport
     {
         $response = $this->client->send(
@@ -31,11 +40,16 @@ class Documents
             method: HttpMethod::POST
         );
 
-        $invoice = InvoiceImport::fill($response['response']->data);
-
-        return $invoice;
+        return InvoiceImport::fill($response['response']->data);
     }
 
+    /**
+     * @throws ResponseException
+     * @throws UnexpectedErrorException
+     * @throws ScopeException
+     * @throws AuthenticationException
+     * @throws UnknownFormatException
+     */
     public function getInvoiceByUuid(string $uuid): Invoice
     {
         $response = $this->client->send(
@@ -43,11 +57,15 @@ class Documents
             method: HttpMethod::GET
         );
 
-        $invoice = Invoice::fill($response['response']->data);
-
-        return $invoice;
+        return Invoice::fill($response['response']->data);
     }
 
+    /**
+     * @throws ResponseException
+     * @throws UnexpectedErrorException
+     * @throws ScopeException
+     * @throws AuthenticationException
+     */
     public function availableActions(Invoice $invoice): array
     {
         $response = $this->client->send(
@@ -55,15 +73,15 @@ class Documents
             method: HttpMethod::GET
         );
 
-        $actions = DocumentAction::fillAll($response['response']->data);
-        return $actions;
+        return DocumentAction::fillAll($response['response']->data);
     }
 
     /**
-     * @throws WrongStateException
      * @throws AuthenticationException
      * @throws ResponseException
      * @throws ScopeException
+     * @throws UnexpectedErrorException
+     * @throws WrongStateException
      */
     public function executeAction(Invoice $invoice, DocumentAction $action): void
     {

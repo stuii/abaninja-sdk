@@ -4,20 +4,21 @@ namespace Stui\AbaNinja\Models\Documents\Invoices\Elements;
 
 use JsonSerializable;
 use stdClass;
+use Stui\AbaNinja\Models\Accounting\TaxRate;
 
 class TaxPosition implements JsonSerializable
 {
     public ?int $accountNumber = null;
     public bool $isTaxIncluded = false;
     public int $amount;
-    public float $taxRate;
+    public TaxRate $taxRate;
 
     public function jsonSerialize(): array
     {
         $taxPositionData = [
             'isTaxIncluded' => $this->isTaxIncluded,
             'amount' => (float)($this->amount / 100),
-            'taxRate' => $this->taxRate
+            'taxRateUuid' => $this->taxRate->uuid,
         ];
 
         if ($this->accountNumber !== null) {
@@ -34,7 +35,7 @@ class TaxPosition implements JsonSerializable
         $taxPosition->accountNumber = $data->accountNumber;
         $taxPosition->isTaxIncluded = $data->isTaxIncluded;
         $taxPosition->amount = (int)($data->amount * 100);
-        $taxPosition->taxRate = $data->taxRate;
+        //$taxPosition->taxRateUuid = $data->taxRateUuid; // TODO
 
         return $taxPosition;
     }

@@ -62,8 +62,8 @@
             $responseCode = curl_getinfo($apiRequest, CURLINFO_HTTP_CODE);
 
             if (is_string($response)) {
-                if (json_encode(json_decode($response)) !== $response) {
-                    throw new ResponseException('API returned invalid JSON response', 9901);
+                if (!json_validate($response)) {
+                   throw new ResponseException('API returned invalid JSON response', 9901);
                 }
                 $response = json_decode($response);
             }
