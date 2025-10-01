@@ -23,6 +23,8 @@ class TaxRates
      * @throws ResponseException
      * @throws ScopeException
      * @throws AuthenticationException
+     *
+     *  @return array<array-key, TaxRate>
      */
     public function getAllTaxRates(): array
     {

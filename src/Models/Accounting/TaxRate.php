@@ -17,7 +17,7 @@ class TaxRate
 
         $taxRate->uuid = $data->uuid;
         $taxRate->rate = $data->rate;
-        $taxRate->isInactive = $data->is_inactive;
+        $taxRate->isInactive = $data->isInactive;
 
         return $taxRate;
     }

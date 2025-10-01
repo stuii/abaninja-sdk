@@ -70,12 +70,16 @@
             switch ($responseCode) {
                 case 401:
                     $e = new AuthenticationException('Could not authenticate. Please check your API token.', 9902);
+                    break;
                 case 403:
                     $e = new ScopeException('The provided API token does not fulfill the required scope requirements.', 9903);
+                    break;
                 case 404:
                     $e = new ResponseException('The requested resource could not be found by the API.', 9904);
+                    break;
                 case 500:
                     $e = new UnexpectedErrorException('The API returned an unexpected error.', 9905);
+                    break;
             }
             if (isset($e)) {
                 $e->setData($response);
