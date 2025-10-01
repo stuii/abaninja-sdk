@@ -66,6 +66,23 @@ readonly class Webhooks
         );
     }
 
+    /**
+     * @throws UnexpectedErrorException
+     * @throws ResponseException
+     * @throws ScopeException
+     * @throws AuthenticationException
+     */
+    public function createWebhook(Webhook $webhook): Webhook
+    {
+        $response = $this->client->send(
+            url: '/accounts/' . $this->accountUuid . '/webhooks/v2/outgoing-webhooks/',
+            data: $webhook->jsonSerialize(),
+            method: HttpMethod::POST
+        );
+
+        return Webhook::fill($response['response']->data);
+    }
+
     public function validateSignature(string $payload, string $signatureKey, string $expectedHash): bool
     {
         $hash = hash_hmac('sha256', $payload, $signatureKey, false);

@@ -7,10 +7,10 @@ use Stui\AbaNinja\Enums\WebhookEventType;
 
 class Webhook
 {
-    private string $uuid;
-    private string $targetUrl;
-    private string $signatureKey;
-    private array $webhookEventTypes = [];
+    public string $uuid;
+    public string $targetUrl;
+    public string $signatureKey;
+    public array $webhookEventTypes = [];
 
 
     public static function fill(stdClass $data): self
