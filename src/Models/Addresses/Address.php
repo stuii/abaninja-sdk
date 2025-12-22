@@ -9,8 +9,8 @@ use Stui\AbaNinja\Enums\SwissState;
 class Address implements JsonSerializable
 {
     public ?string $uuid = null;
-    public string $address;
-    public string $streetNumber;
+    public ?string $address;
+    public ?string $streetNumber;
     public ?string $extension = null;
     public ?string $additionalField = null;
     public string $city;

@@ -20,7 +20,7 @@ class Webhook
         $webhook->targetUrl = $data->targetUrl;
         $webhook->signatureKey = $data->signatureKey;
 
-        foreach ($data->webhookEventTypes as $eventType) {
+        foreach ($data->eventTypes as $eventType) {
             $event = WebhookEventType::from($eventType);
             $webhook->webhookEventTypes[] = $event;
         }

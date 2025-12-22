@@ -46,6 +46,7 @@ readonly class Webhooks
     {
         $response = $this->client->send(
             url: '/accounts/' . $this->accountUuid . '/webhooks/v2/outgoing-webhooks/' . $uuid,
+            data: ['showSignatureKey' => true],
             method: HttpMethod::GET
         );
 
@@ -75,7 +76,7 @@ readonly class Webhooks
     public function createWebhook(Webhook $webhook): Webhook
     {
         $response = $this->client->send(
-            url: '/accounts/' . $this->accountUuid . '/webhooks/v2/outgoing-webhooks/',
+            url: '/accounts/' . $this->accountUuid . '/webhooks/v2/outgoing-webhooks',
             data: $webhook->jsonSerialize(),
             method: HttpMethod::POST
         );
