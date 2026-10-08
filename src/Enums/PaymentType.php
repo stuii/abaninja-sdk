@@ -22,4 +22,6 @@ enum PaymentType: string
     case DEBIT_LOSS = 'DEBIT_LOSS';
     case CURRENT_ACCOUNT = 'CURRENT_ACCOUNT';
     case PREPAYMENT = 'PREPAYMENT';
+    case STRIPE_CREDIT_CARD = 'STRIPE_CREDIT_CARD';
+    case STRIPE_TWINT = 'STRIPE_TWINT';
 }
