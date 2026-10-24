@@ -1,26 +1,20 @@
 <?php
 
-use Dotenv\Dotenv;
-use Stui\AbaNinja\Client;
+declare(strict_types=1);
+
+use Stui\AbaNinja\AbaNinja;
 use Stui\AbaNinja\Exceptions\AbaNinjaException;
-use Stui\AbaNinja\Service\Documents;
+use Symfony\Component\Uid\Uuid;
 
-require '../../vendor/autoload.php';
+/** @var AbaNinja $abaNinja */
+$abaNinja = require __DIR__ . '/../bootstrap.php';
 
-$dotenv = Dotenv::createImmutable('../../');
-$dotenv->load();
-
-$client = new Client(
-    apiKey: $_ENV['API_KEY'],
-    baseUrl: $_ENV['ABANINJA_API_BASE_URL'] // if you want to override the standard API URL
-);
-
-$documentsService = new Documents($client, $_ENV['ACCOUNT_UUID']);
+$documentsService = $abaNinja->documents();
 
 try {
-    $invoice = $documentsService->getInvoiceByUuid($_ENV['INVOICE_UUID']);
+    $invoice = $documentsService->getInvoiceByUuid(Uuid::fromString($_ENV['INVOICE_UUID']));
     $availableActions = $documentsService->availableActions($invoice);
     var_dump($availableActions);
-} catch (AbaNinjaException $e){
+} catch (AbaNinjaException $e) {
     echo $e->getMessage();
 }

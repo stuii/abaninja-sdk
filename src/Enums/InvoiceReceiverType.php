@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Stui\AbaNinja\Enums;
 
+use Stui\AbaNinja\Models\Addresses\Person;
 use Stui\AbaNinja\Models\Documents\Invoices\Elements\InvoiceReceiver;
+use Symfony\Component\Uid\Uuid;
 
 enum InvoiceReceiverType
 {
@@ -17,24 +19,30 @@ enum InvoiceReceiverType
         switch ($this) {
             case self::PERSON:
                 $data = [
-                    'addressUuid' => $receiver->addressUuid,
-                    'personUuid' => $receiver->personUuid,
+                    'addressUuid' => $receiver->addressUuid->toRfc4122(),
+                    'personUuid' => $receiver->personUuid->toRfc4122(),
                 ];
+                if (!is_null($receiver->deliveryAddressUuid)) {
+                    $data['deliveryAddressUuid'] = $receiver->deliveryAddressUuid->toRfc4122();
+                }
                 break;
 
             case self::COMPANY:
                 $data = [
-                    'addressUuid' => $receiver->addressUuid,
-                    'companyUuid' => $receiver->companyUuid,
+                    'addressUuid' => $receiver->addressUuid->toRfc4122(),
+                    'companyUuid' => $receiver->companyUuid->toRfc4122(),
                 ];
                 if (!is_null($receiver->deliveryAddressUuid)) {
-                    $data['deliveryAddressUuid'] = $receiver->deliveryAddressUuid;
+                    $data['deliveryAddressUuid'] = $receiver->deliveryAddressUuid->toRfc4122();
                 }
                 if (!is_null($receiver->contactPersonUuid)) {
-                    $data['contactPersonUuid'] = $receiver->contactPersonUuid;
+                    $data['contactPersonUuid'] = $receiver->contactPersonUuid->toRfc4122();
                 }
                 if (count($receiver->additionalReceivers) > 0) {
-                    $data['additionalReceivers'] = $receiver->additionalReceivers;
+                    $data['additionalReceivers'] = array_values(array_map(
+                        static fn (Person|Uuid $person): string => ($person instanceof Person ? $person->uuid : $person)->toRfc4122(),
+                        $receiver->additionalReceivers
+                    ));
                 }
                 break;
 

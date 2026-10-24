@@ -1,63 +1,104 @@
-# Featureset
+# AbaNinja SDK
 
-## Addresses
+[![Tests](https://github.com/stuii/abaninja-sdk/actions/workflows/tests.yml/badge.svg)](https://github.com/stuii/abaninja-sdk/actions/workflows/tests.yml)
+[![Coverage](https://codecov.io/gh/stuii/abaninja-sdk/graph/badge.svg)](https://codecov.io/gh/stuii/abaninja-sdk)
+[![Latest Version](https://img.shields.io/packagist/v/stui/abaninja-sdk)](https://packagist.org/packages/stui/abaninja-sdk)
+[![PHP Version](https://img.shields.io/packagist/dependency-v/stui/abaninja-sdk/php)](composer.json)
+[![Downloads](https://img.shields.io/packagist/dt/stui/abaninja-sdk)](https://packagist.org/packages/stui/abaninja-sdk)
+[![License](https://img.shields.io/github/license/stuii/abaninja-sdk)](LICENSE)
 
-| Status | Function                                           | SDK Syntax                                                                                                                                         | Reference                                                                                                                                      | Release |
-|--------|----------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| ✅      | Check if the customerNumber already in use or not  | Addresses::checkCustomerNumber(<br/>&nbsp;&nbsp;string $customerNumber<br/>)                                                                       | [API Docs](https://www.abaninja.ch/apidocs/#tag/Addresses/paths/~1accounts~1%7BaccountUuid%7D~1addresses~1v2~1check-customer-number/get)       | v0.0.1  | 
-| ✅      | Get a list of company addresses for given account  | Addresses::getCompanyAddressList(<br/>&nbsp;&nbsp;?int $page = null,<br/>&nbsp;&nbsp;?int $limit = null,<br/>&nbsp;&nbsp;?array $tags = null<br/>) | [API Docs](https://abaninja.ch/apidocs/#tag/Addresses/paths/~1accounts~1%7BaccountUuid%7D~1addresses~1v2~1companies/get)                       | v0.0.1  | 
-| ❌      | Get Single Company                                 |                                                                                                                                                    | [API Docs](https://abaninja.ch/apidocs/#tag/Addresses/paths/~1accounts~1%7BaccountUuid%7D~1addresses~1v2~1companies~1%7BcompanyUuid%7D/get)    | -       | 
-| ❌      | Update a single Company                            |                                                                                                                                                    | [API Docs](https://abaninja.ch/apidocs/#tag/Addresses/paths/~1accounts~1%7BaccountUuid%7D~1addresses~1v2~1companies~1%7BcompanyUuid%7D/patch)  | -       | 
-| ❌      | Delete Company                                     |                                                                                                                                                    | [API Docs](https://abaninja.ch/apidocs/#tag/Addresses/paths/~1accounts~1%7BaccountUuid%7D~1addresses~1v2~1companies~1%7BcompanyUuid%7D/delete) | -       | 
-| ❌      | Get a list of personal addresses for given account |                                                                                                                                                    | [API Docs](https://abaninja.ch/apidocs/#tag/Addresses/paths/~1accounts~1%7BaccountUuid%7D~1addresses~1v2~1persons/get)                         | -       | 
-| ✅      | Get a single Person                                | Addresses::getSinglePrivateAddress(<br/>&nbsp;&nbsp;string $uuid<br/>)                                                                             | [API Docs](https://abaninja.ch/apidocs/#tag/Addresses/paths/~1accounts~1%7BaccountUuid%7D~1addresses~1v2~1persons~1%7BpersonUuid%7D/get)       | v0.0.2  | 
-| ❌      | Update Person                                      |                                                                                                                                                    | [API Docs](https://abaninja.ch/apidocs/#tag/Addresses/paths/~1accounts~1%7BaccountUuid%7D~1addresses~1v2~1persons~1%7BpersonUuid%7D/patch)     | -       | 
-| ❌      | Delete Person                                      |                                                                                                                                                    | [API Docs](https://abaninja.ch/apidocs/#tag/Addresses/paths/~1accounts~1%7BaccountUuid%7D~1addresses~1v2~1persons~1%7BpersonUuid%7D/delete)    | -       | 
-| ✅      | Create new Person                                  | Addresses::createNewPrivateAddress(<br/>&nbsp;&nbsp;Person $person,<br/>&nbsp;&nbsp;bool $force = false<br/>)                                      | [API Docs](https://abaninja.ch/apidocs/#tag/Addresses/paths/~1accounts~1%7BaccountUuid%7D~1addresses~1v2~1addresses/post)                      | v0.0.1  | 
-| ✅      | Create new Company                                 | Addresses::createNewCompanyAddress(<br/>&nbsp;&nbsp;Company $company,<br/>&nbsp;&nbsp;bool $force = false<br/>)                                    | [API Docs](https://abaninja.ch/apidocs/#tag/Addresses/paths/~1accounts~1%7BaccountUuid%7D~1addresses~1v2~1addresses/post)                      | v0.0.1  | 
+PHP SDK for the public [AbaNinja API](https://abaninja.ch/apidocs/).
 
-## Documents
+## Features
 
-### Quotes
+- **Addresses:** check customer numbers, list companies, get and update persons,
+  create persons and companies with duplicate detection
+- **Invoices:** get invoices, import invoices from PDF, list and execute invoice actions
+- **Payments:** get payments, record incoming payments for invoices
+- **Tax rates:** list all tax rates
+- **Webhooks:** list, get, create and delete webhooks, validate signatures of incoming calls
 
-❌ No Features implemented yet
+Not supported yet: other document types (quotes, credit notes, …), creating or listing invoices,
+listing persons, getting, updating or deleting companies and deleting persons.
 
-### Contract Notes
+## Requirements
 
-❌ No Features implemented yet
+- PHP 8.4 or newer
+- `ext-curl`
 
-### Delivery Notes
+## Installation
 
-❌ No Features implemented yet
+```bash
+composer require stui/abaninja-sdk
+```
 
-### Invoices
+Upgrading from 0.0.x? See the [upgrade guide](UPGRADE.md).
 
-| Status | Function                                 | SDK Syntax                                                                                              | Reference                                                                                                                                                                    | Release |
-|--------|------------------------------------------|---------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| ❌      | Invoice List                             |                                                                                                         | [API Docs](https://abaninja.ch/apidocs/#tag/DocumentsInvoices/paths/~1accounts~1%7BaccountUuid%7D~1documents~1v2~1invoices/get)                                              | -       | 
-| ❌      | Create Invoice                           |                                                                                                         | [API Docs](https://abaninja.ch/apidocs/#tag/DocumentsInvoices/paths/~1accounts~1%7BaccountUuid%7D~1documents~1v2~1invoices/post)                                             | -       | 
-| ✅      | Get single Invoice                       | Documents::getInvoiceByUuid(<br/>&nbsp;&nbsp;string $uuid<br/>)                                         | [API Docs](https://abaninja.ch/apidocs/#tag/DocumentsInvoices/paths/~1accounts~1%7BaccountUuid%7D~1documents~1v2~1invoices~1%7BdocumentUuid%7D/get)                          | v0.0.2  | 
-| ❌      | Update Invoice                           |                                                                                                         | [API Docs](https://abaninja.ch/apidocs/#tag/DocumentsInvoices/paths/~1accounts~1%7BaccountUuid%7D~1documents~1v2~1invoices~1%7BdocumentUuid%7D/patch)                        | -       | 
-| ✅      | Get available Actions for an Invoice     | Documents::availableActions(<br/>&nbsp;&nbsp;Invoice $invoice<br/>)                                     | [API Docs](https://abaninja.ch/apidocs/#tag/DocumentsInvoices/paths/~1accounts~1%7BaccountUuid%7D~1documents~1v2~1invoices~1%7BdocumentUuid%7D~1actions/get)                 | v0.0.2  | 
-| ✅      | Execute an action on an existing invoice | Documents::executeAction(<br/>&nbsp;&nbsp;Invoice $invoice<br/>&nbsp;&nbsp;DocumentAction $action<br/>) | [API Docs](https://abaninja.ch/apidocs/#tag/DocumentsInvoices/paths/~1accounts~1%7BaccountUuid%7D~1documents~1v2~1invoices~1%7BdocumentUuid%7D~1actions~1%7Baction%7D/patch) | v0.0.2  | 
-| ✅      | Create Invoice by importing PDF          | Documents::importInvoice(<br/>&nbsp;&nbsp;Invoice $invoice<br/>)                                        | [API Docs](https://abaninja.ch/apidocs/#tag/DocumentsInvoicesImported/paths/~1accounts~1%7BaccountUuid%7D~1documents~1v2~1invoices~1import/post)                             | v0.0.1  | 
+## Usage
 
-### Credit Notes
+```php
+use Stui\AbaNinja\AbaNinja;
+use Stui\AbaNinja\Exceptions\AbaNinjaException;
+use Symfony\Component\Uid\Uuid;
 
-❌ No Features implemented yet
+$abaNinja = AbaNinja::create(apiKey: '...', accountUuid: Uuid::fromString('...'));
 
-### Recurring Invoices
+try {
+    $invoice = $abaNinja->documents()->getInvoiceByUuid(Uuid::fromString('...'));
+} catch (AbaNinjaException $e) {
+    echo $e->getMessage();
+    var_dump($e->getData()); // the decoded API response, if any
+}
+```
 
-❌ No Features implemented yet
+The services can also be created directly, e.g. `new Addresses($client, $accountUuid)`.
 
-### Templates
+- All uuids are [`Symfony\Component\Uid\Uuid`](https://symfony.com/doc/current/components/uid.html) objects.
+  `Uuid::fromString()` throws an `InvalidArgumentException` for invalid uuids.
+- Amounts are integer cents, e.g. `10000` is CHF 100.00.
+- Enum values the SDK does not know yet (e.g. a new payment type) are `null`. Unknown webhook event types
+  and document actions are left out of their lists.
+- The `Client` only connects via https and only sends the API key to its base URL.
+  It is immutable: `setApiKey()` (alias of `withApiKey()`) returns a new client and leaves the original unchanged.
 
-❌ No Features implemented yet
+More examples can be found in [`examples/`](examples). Copy `.env.example` to `.env` to run them.
 
-### Receipts
+## Errors
 
-❌ No Features implemented yet
+All exceptions extend `Stui\AbaNinja\Exceptions\AbaNinjaException`. `getData()` returns the API response or the invalid value.
 
-### Document Queue
+| Exception                      | Code                  | Thrown when                                                  |
+|--------------------------------|-----------------------|--------------------------------------------------------------|
+| `ValidationException`          | 9906                  | the API rejects the submitted data (HTTP 400, 422)           |
+| `AuthenticationException`      | 9902                  | the API token is invalid (HTTP 401)                          |
+| `ScopeException`               | 9903                  | the API token lacks the required scope (HTTP 403)            |
+| `ResponseException`            | 9904                  | the resource does not exist (HTTP 404)                       |
+| `ResponseException`            | 9908                  | the API returns any other error status                       |
+| `ResponseException`            | 9901                  | the API returns invalid JSON                                 |
+| `UnexpectedErrorException`     | 9905                  | the API has a server error (HTTP 5xx)                        |
+| `ConnectionException`          | 9907                  | the API cannot be reached                                    |
+| `UnknownFormatException`       | 9801, 9805            | the API returns an unknown invoice format or an invalid uuid |
+| `DuplicatesFoundException`     | 1303                  | similar addresses exist, `getData()` returns them            |
+| `RequiredDataMissingException` | 1301, 1302, 1304–1306 | required data is missing before the request is sent          |
+| `WrongStateException`          | 9802                  | the document action is not available                         |
 
-❌ No Features implemented yet
+An invalid base URL, or a URL outside the base URL passed to `Client::send()`, throws an `InvalidArgumentException`.
+
+## Testing your code
+
+To test your own code without calling the API, pass an implementation of `Stui\AbaNinja\Http\HttpClientInterface`
+to the `Client` (see [`tests/FakeHttpClient.php`](tests/FakeHttpClient.php)).
+
+## Development
+
+```bash
+composer install
+composer test
+composer test:coverage # requires the pcov or xdebug extension
+```
+
+See [CHANGELOG.md](CHANGELOG.md) for the changes in each release and [UPGRADE.md](UPGRADE.md) for upgrading from 0.0.x.
+
+## License
+
+[MIT](LICENSE)

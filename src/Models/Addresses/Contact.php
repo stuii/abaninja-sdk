@@ -1,49 +1,45 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Stui\AbaNinja\Models\Addresses;
 
+use JsonSerializable;
 use stdClass;
 use Stui\AbaNinja\Enums\ContactType;
+use Stui\AbaNinja\Models\Concerns\FillsCollections;
 
-class Contact implements \JsonSerializable
+class Contact implements JsonSerializable
 {
-    public ContactType $type;
+    use FillsCollections;
+
+    /** null if the API returns a type this SDK does not know yet */
+    public ?ContactType $type = null;
     public string $value;
-    public bool $isPrimary;
+    public bool $isPrimary = false;
 
 
     public static function fill(stdClass $data): self
     {
         $contact = new Contact();
 
-        $contact->type = ContactType::from($data->type);
+        $contact->type = ContactType::tryFrom($data->type ?? '');
         $contact->value = $data->value;
-        $contact->isPrimary = $data->is_primary;
+        $contact->isPrimary = $data->is_primary ?? false;
 
         return $contact;
-    }
-
-    public static function fillAll(array $data): array
-    {
-        $contacts = [];
-
-        foreach ($data as $entry) {
-            $contacts[] = self::fill($entry);
-        }
-
-        return $contacts;
     }
 
     public function toArray(): array
     {
         return [
-            'type' => $this->type->value,
+            'type' => $this->type?->value,
             'value' => $this->value,
             'primary' => $this->isPrimary
         ];
     }
 
-    public function jsonSerialize(): mixed
+    public function jsonSerialize(): array
     {
         return $this->toArray();
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Stui\AbaNinja\Enums;
 
 enum PaymentType: string

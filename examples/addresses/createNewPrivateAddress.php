@@ -1,45 +1,44 @@
 <?php
 
-use Dotenv\Dotenv;
-use Stui\AbaNinja\Client;
+declare(strict_types=1);
+
+use Stui\AbaNinja\AbaNinja;
+use Stui\AbaNinja\Enums\ContactType;
+use Stui\AbaNinja\Enums\Salutation;
+use Stui\AbaNinja\Enums\SwissState;
 use Stui\AbaNinja\Exceptions\AbaNinjaException;
-use Stui\AbaNinja\Service\Addresses;
+use Stui\AbaNinja\Models\Addresses\Address;
+use Stui\AbaNinja\Models\Addresses\Contact;
+use Stui\AbaNinja\Models\Addresses\Person;
 
-require '../../vendor/autoload.php';
+/** @var AbaNinja $abaNinja */
+$abaNinja = require __DIR__ . '/../bootstrap.php';
 
-$dotenv = Dotenv::createImmutable('../../');
-$dotenv->load();
+$addressService = $abaNinja->addresses();
 
-$client = new Client(
-    apiKey: $_ENV['API_KEY'],
-    baseUrl: $_ENV['ABANINJA_API_BASE_URL'] // if you want to override the standard API URL
-);
-
-$addressService = new Addresses($client, $_ENV['ACCOUNT_UUID']);
-
-$person = new \Stui\AbaNinja\Models\Addresses\Person();
-$person->salutation = \Stui\AbaNinja\Enums\Salutation::MR;
+$person = new Person();
+$person->salutation = Salutation::MR;
 $person->firstName = 'Peter';
 $person->lastName = 'Muster';
 
-$address = new \Stui\AbaNinja\Models\Addresses\Address();
+$address = new Address();
 $address->address = 'Teststrasse';
 $address->streetNumber = '13a';
 $address->zipCode = '9000';
 $address->city = 'St. Gallen';
 $address->countryCode = 'CH';
-$address->state = \Stui\AbaNinja\Enums\SwissState::SG;
+$address->state = SwissState::SG;
 $person->addAddress($address);
 
-$contact = new \Stui\AbaNinja\Models\Addresses\Contact();
-$contact->type = \Stui\AbaNinja\Enums\ContactType::EMAIL;
+$contact = new Contact();
+$contact->type = ContactType::EMAIL;
 $contact->value = 'invalid@example.com';
 $contact->isPrimary = true;
 $person->addContact($contact);
 
 try {
-    $company = $addressService->createNewPrivateAddress($person, true);
-} catch (AbaNinjaException $e){
+    $person = $addressService->createNewPrivateAddress($person, true);
+} catch (AbaNinjaException $e) {
     echo $e->getMessage();
     $similarPersons = $e->getData();
 }

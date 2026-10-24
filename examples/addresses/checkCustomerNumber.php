@@ -1,25 +1,18 @@
 <?php
 
-use Dotenv\Dotenv;
-use Stui\AbaNinja\Client;
+declare(strict_types=1);
+
+use Stui\AbaNinja\AbaNinja;
 use Stui\AbaNinja\Exceptions\AbaNinjaException;
-use Stui\AbaNinja\Service\Addresses;
 
-require '../../vendor/autoload.php';
+/** @var AbaNinja $abaNinja */
+$abaNinja = require __DIR__ . '/../bootstrap.php';
 
-$dotenv = Dotenv::createImmutable('../../');
-$dotenv->load();
-
-$client = new Client(
-    apiKey: $_ENV['API_KEY'],
-    baseUrl: $_ENV['ABANINJA_API_BASE_URL'] // if you want to override the standard API URL
-);
-
-$addressService = new Addresses($client, $_ENV['ACCOUNT_UUID']);
+$addressService = $abaNinja->addresses();
 
 try {
     $customerNumberAvailable = $addressService->checkCustomerNumber('A0001');
     echo $customerNumberAvailable ? 'available' : 'not available';
-} catch (AbaNinjaException $e){
+} catch (AbaNinjaException $e) {
     echo $e->getMessage();
 }

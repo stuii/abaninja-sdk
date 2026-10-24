@@ -4,167 +4,162 @@ declare(strict_types=1);
 
 namespace Stui\AbaNinja\Service;
 
-use Stui\AbaNinja\Client;
 use Stui\AbaNinja\Enums\HttpMethod;
-use Stui\AbaNinja\Exceptions\AuthenticationException;
+use Stui\AbaNinja\Exceptions\AbaNinjaException;
 use Stui\AbaNinja\Exceptions\DuplicatesFoundException;
 use Stui\AbaNinja\Exceptions\RequiredDataMissingException;
-use Stui\AbaNinja\Exceptions\ResponseException;
-use Stui\AbaNinja\Exceptions\ScopeException;
 use Stui\AbaNinja\Models\Addresses\Company;
 use Stui\AbaNinja\Models\Addresses\Person;
 use Stui\AbaNinja\Models\Addresses\PersonOrCompany;
+use Symfony\Component\Uid\Uuid;
 
-class Addresses
+readonly class Addresses extends Service
 {
-    public function __construct(
-        private Client $client,
-        private string $accountUuid
-    )
-    {
-    }
-
     /**
-     * @throws AuthenticationException
-     * @throws ResponseException
-     * @throws ScopeException
-     * @link https://abaninja.ch/apidocs/#tag/Addresses/paths/~1accounts~1%7BaccountUuid%7D~1addresses~1v2~1check-customer-number/get API Documentation
+     * Returns true if the customer number is still available.
+     *
+     * @throws AbaNinjaException
      */
-    public function checkCustomerNumber(string $customerNumber, ?string $addressUuidToIgnore = null): bool
+    public function checkCustomerNumber(string $customerNumber, ?Uuid $addressUuidToIgnore = null): bool
     {
         $data = ['customerNumber' => $customerNumber];
-        if ($addressUuidToIgnore === null) {
-            $data['addressUuid'] = $addressUuidToIgnore;
+        if ($addressUuidToIgnore !== null) {
+            $data['addressUuid'] = $addressUuidToIgnore->toRfc4122();
         }
 
         $response = $this->client->send(
-            url: '/accounts/' . $this->accountUuid . '/addresses/v2/check-customer-number',
+            url: $this->accountPath('addresses/v2/check-customer-number'),
             data: $data,
-            method: HttpMethod::GET
+            method: HttpMethod::GET,
+            acceptedStatusCodes: [400, 409, 422]
         );
 
-        return $response['httpCode'] === 200;
+        return $response->httpCode === 200;
     }
 
     /**
-     * @throws ScopeException
-     * @throws AuthenticationException
-     * @throws ResponseException
+     * @param array<string>|null $tags
+     *
+     * @return array<Company>
+     *
+     * @throws AbaNinjaException
      */
     public function getCompanyAddressList(?int $page = null, ?int $limit = null, ?array $tags = null): array
     {
-        $data = [];
-        if ($page === null) { $data['page'] = $page; }
-        if ($limit === null) { $data['page'] = $limit; }
-        if ($tags === null) { $data['page'] = $tags; }
+        $data = array_filter(
+            ['page' => $page, 'limit' => $limit, 'tags' => $tags],
+            static fn (mixed $value): bool => $value !== null
+        );
 
         $response = $this->client->send(
-            url: '/accounts/' . $this->accountUuid . '/addresses/v2/companies',
+            url: $this->accountPath('addresses/v2/companies'),
             data: $data,
             method: HttpMethod::GET
         );
 
-        $companyData = [];
-
-        foreach ($response['response']->data as $companyEntry) {
-            $companyData[] = Company::fill($companyEntry);
-        }
-
-        return $companyData;
+        return Company::fillAll($response->data() ?? []);
     }
 
     /**
+     * @throws AbaNinjaException
      * @throws DuplicatesFoundException
-     * @throws ResponseException
-     * @throws ScopeException
-     * @throws AuthenticationException
+     * @throws RequiredDataMissingException
      */
     public function createNewCompanyAddress(Company $company, bool $force = false): Company
     {
-        if (count($company->getAddresses()) < 1) {
-            throw new RequiredDataMissingException('At least one address must be specified', 1302);
-        }
-        $response = $this->client->send(
-            url: '/accounts/' . $this->accountUuid . '/addresses/v2/addresses?force=' . ($force ? 'true' : 'false'),
-            data: $company->jsonSerialize(),
-            method: HttpMethod::POST
-        );
+        $this->assertHasAddress($company);
 
-        if ($response['httpCode'] === 409) {
-            $similarAddresses = PersonOrCompany::fillAll($response['response']->data);
-            $e = new DuplicatesFoundException('One or multiple possible duplicates have been found', 1303);
-            $e->setData($similarAddresses);
-            throw $e;
-        }
-
-        return Company::fill($response['response']->data);
+        return Company::fill($this->createAddress($company, $force));
     }
 
     /**
+     * @throws AbaNinjaException
      * @throws DuplicatesFoundException
-     * @throws ResponseException
-     * @throws ScopeException
-     * @throws AuthenticationException
      * @throws RequiredDataMissingException
      */
     public function createNewPrivateAddress(Person $person, bool $force = false): Person
     {
-        if (count($person->getContacts()) < 1) {
-            throw new RequiredDataMissingException('At least one contact must be specified', 1301);
-        }
-        if (count($person->getAddresses()) < 1) {
-            throw new RequiredDataMissingException('At least one address must be specified', 1302);
-        }
+        $this->assertHasContact($person);
+        $this->assertHasAddress($person);
 
-        $response = $this->client->send(
-            url: '/accounts/' . $this->accountUuid . '/addresses/v2/addresses?force=' . ($force ? 'true' : 'false'),
-            data: $person->jsonSerialize(),
-            method: HttpMethod::POST
-        );
-
-        if ($response['httpCode'] === 409) {
-            $similarAddresses = PersonOrCompany::fillAll($response['response']->data);
-            $e = new DuplicatesFoundException('One or multiple possible duplicates have been found', 1303);
-            $e->setData($similarAddresses);
-            throw $e;
-        }
-
-        return Person::fill($response['response']->data);
+        return Person::fill($this->createAddress($person, $force));
     }
 
-
     /**
-     * @throws DuplicatesFoundException
-     * @throws ResponseException
-     * @throws ScopeException
-     * @throws AuthenticationException
+     * @throws AbaNinjaException
      * @throws RequiredDataMissingException
      */
     public function updatePrivateAddress(Person $person): Person
     {
-        if (count($person->getContacts()) < 1) {
-            throw new RequiredDataMissingException('At least one contact must be specified', 1301);
+        if ($person->uuid === null) {
+            throw new RequiredDataMissingException('The person must have a uuid to be updated', 1304);
         }
-        if (count($person->getAddresses()) < 1) {
-            throw new RequiredDataMissingException('At least one address must be specified', 1302);
-        }
+        $this->assertHasContact($person);
+        $this->assertHasAddress($person);
 
         $response = $this->client->send(
-            url: '/accounts/' . $this->accountUuid . '/addresses/v2/persons/' . $person->uuid,
+            url: $this->accountPath('addresses/v2/persons/' . $person->uuid->toRfc4122()),
             data: $person->jsonSerialize(),
             method: HttpMethod::PATCH
         );
 
-        return Person::fill($response['response']->data);
+        return Person::fill($response->data());
     }
 
-    public function getSinglePrivateAddress(string $personUuid): Person
+    /**
+     * @throws AbaNinjaException
+     */
+    public function getSinglePrivateAddress(Uuid $personUuid): Person
     {
         $response = $this->client->send(
-            url: '/accounts/' . $this->accountUuid . '/addresses/v2/persons/' . $personUuid,
+            url: $this->accountPath('addresses/v2/persons/' . $personUuid->toRfc4122()),
             method: HttpMethod::GET
         );
 
-        return Person::fill($response['response']->data);
+        return Person::fill($response->data());
+    }
+
+    /**
+     * @throws AbaNinjaException
+     * @throws DuplicatesFoundException
+     */
+    private function createAddress(Person|Company $address, bool $force): mixed
+    {
+        $response = $this->client->send(
+            url: $this->accountPath('addresses/v2/addresses?force=' . ($force ? 'true' : 'false')),
+            data: $address->jsonSerialize(),
+            method: HttpMethod::POST,
+            acceptedStatusCodes: [409]
+        );
+
+        if ($response->httpCode === 409) {
+            throw new DuplicatesFoundException(
+                'One or multiple possible duplicates have been found',
+                1303,
+                PersonOrCompany::fillAll($response->data() ?? [])
+            );
+        }
+
+        return $response->data();
+    }
+
+    /**
+     * @throws RequiredDataMissingException
+     */
+    private function assertHasContact(Person $person): void
+    {
+        if ($person->getContacts() === []) {
+            throw new RequiredDataMissingException('At least one contact must be specified', 1301);
+        }
+    }
+
+    /**
+     * @throws RequiredDataMissingException
+     */
+    private function assertHasAddress(Person|Company $address): void
+    {
+        if ($address->getAddresses() === []) {
+            throw new RequiredDataMissingException('At least one address must be specified', 1302);
+        }
     }
 }

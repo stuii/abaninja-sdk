@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Stui\AbaNinja\Models\Documents\PaymentInstructions;
 
-use JsonSerializable;
-
-class IbanPaymentInstructions extends PaymentInstructions implements JsonSerializable
+class IbanPaymentInstructions extends PaymentInstructions
 {
     public string $iban;
-    public string $bic;
+    public ?string $bic = null;
 
     /**
      * @inheritDoc

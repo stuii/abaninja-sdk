@@ -67,13 +67,24 @@ enum DocumentAction: string
     case SIGN = 'sign';
     case SIGN_SUPPLIER_CREDIT_NOTE = 'signSupplierCreditNote';
 
-
-    public static function fillAll(stdClass $data): array
+    /**
+     * Accepts the actions as object keys (`{"markSent": ...}`) or as list (`["markSent"]`),
+     * an empty list may also be encoded as `[]`. Actions this SDK does not know yet are skipped.
+     *
+     * @param stdClass|array<mixed>|null $data
+     *
+     * @return array<self>
+     */
+    public static function fillAll(stdClass|array|null $data): array
     {
         $actions = [];
 
-        foreach ($data as $key => $value) {
-            $actions[] = self::from($key);
+        foreach ((array) $data as $key => $value) {
+            $name = is_string($key) ? $key : $value;
+            $action = is_string($name) ? self::tryFrom($name) : null;
+            if ($action !== null) {
+                $actions[] = $action;
+            }
         }
 
         return $actions;

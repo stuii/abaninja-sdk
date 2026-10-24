@@ -1,18 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Stui\AbaNinja\Exceptions;
 
-class AbaNinjaException extends \Exception
-{
-    private $data = null;
+use Exception;
+use Throwable;
 
-    public function getData()
-    {
-        return $this->data;
+class AbaNinjaException extends Exception
+{
+    public function __construct(
+        string $message = '',
+        int $code = 0,
+        private readonly mixed $data = null,
+        ?Throwable $previous = null
+    ) {
+        parent::__construct($message, $code, $previous);
     }
 
-    public function setData($data)
+    public function getData(): mixed
     {
-        $this->data = $data;
+        return $this->data;
     }
 }

@@ -1,25 +1,18 @@
 <?php
 
-use Dotenv\Dotenv;
-use Stui\AbaNinja\Client;
+declare(strict_types=1);
+
+use Stui\AbaNinja\AbaNinja;
 use Stui\AbaNinja\Exceptions\AbaNinjaException;
 use Stui\AbaNinja\Models\Documents\Invoices\Elements\InvoiceReceiver;
 use Stui\AbaNinja\Models\Documents\Invoices\Elements\TaxPosition;
 use Stui\AbaNinja\Models\Documents\Invoices\InvoiceImport;
 use Stui\AbaNinja\Models\Documents\PaymentInstructions\QrIbanPaymentInstructions;
-use Stui\AbaNinja\Service\Documents;
 
-require '../../vendor/autoload.php';
+/** @var AbaNinja $abaNinja */
+$abaNinja = require __DIR__ . '/../bootstrap.php';
 
-$dotenv = Dotenv::createImmutable('../../');
-$dotenv->load();
-
-$client = new Client(
-    apiKey: $_ENV['API_KEY'],
-    baseUrl: $_ENV['ABANINJA_API_BASE_URL'] // if you want to override the standard API URL
-);
-
-$documentsService = new Documents($client, $_ENV['ACCOUNT_UUID']);
+$documentsService = $abaNinja->documents();
 
 $document = new InvoiceImport();
 $document->documentUrl = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
@@ -29,9 +22,8 @@ $receiver = new InvoiceReceiver();
 $receiver->setCustomerNumber('A0001');
 $document->receiver = $receiver;
 
-$date = new DateTime('2023-11-01');
-$document->invoiceDate = new DateTime('2023-11-01');
-$document->dueDate = $date->add(new DateInterval('20d'));
+$document->invoiceDate = new DateTimeImmutable('2025-11-01');
+$document->dueDate = $document->invoiceDate->add(new DateInterval('P20D'));
 
 $paymentInstructions = new QrIbanPaymentInstructions();
 $paymentInstructions->qrIban = $_ENV['QR_IBAN'];
@@ -43,11 +35,12 @@ $document->documentTotal = 10000; // CHF 100.00
 $taxPosition = new TaxPosition();
 $taxPosition->accountNumber = 3200;
 $taxPosition->amount = 10000; // CHF 100.00
-$taxPosition->taxRate = 0;
+$taxPosition->isTaxIncluded = true;
+// $taxPosition->taxRate = $taxRate; // one of TaxRates::getAllTaxRates()
 $document->addTaxPosition($taxPosition);
 
 try {
     $documentsService->importInvoice($document);
-} catch (AbaNinjaException $e){
+} catch (AbaNinjaException $e) {
     echo $e->getMessage();
 }

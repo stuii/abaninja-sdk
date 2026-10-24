@@ -4,94 +4,75 @@ declare(strict_types=1);
 
 namespace Stui\AbaNinja\Service;
 
-use Stui\AbaNinja\Client;
 use Stui\AbaNinja\Enums\DocumentAction;
 use Stui\AbaNinja\Enums\HttpMethod;
-use Stui\AbaNinja\Exceptions\AuthenticationException;
-use Stui\AbaNinja\Exceptions\ResponseException;
-use Stui\AbaNinja\Exceptions\ScopeException;
-use Stui\AbaNinja\Exceptions\UnexpectedErrorException;
+use Stui\AbaNinja\Exceptions\AbaNinjaException;
+use Stui\AbaNinja\Exceptions\RequiredDataMissingException;
 use Stui\AbaNinja\Exceptions\UnknownFormatException;
 use Stui\AbaNinja\Exceptions\WrongStateException;
 use Stui\AbaNinja\Models\Documents\Invoices\Invoice;
 use Stui\AbaNinja\Models\Documents\Invoices\InvoiceImport;
+use Symfony\Component\Uid\Uuid;
 
-class Documents
+readonly class Documents extends Service
 {
-    public function __construct(
-        private readonly Client $client,
-        private readonly string $accountUuid
-    )
-    {
-    }
-
     /**
-     * @throws ResponseException
-     * @throws UnexpectedErrorException
-     * @throws ScopeException
-     * @throws AuthenticationException
-     * @throws UnknownFormatException
+     * @throws AbaNinjaException
      */
     public function importInvoice(InvoiceImport $invoice): InvoiceImport
     {
         $response = $this->client->send(
-            url: '/accounts/' . $this->accountUuid . '/documents/v2/invoices/import',
+            url: $this->accountPath('documents/v2/invoices/import'),
             data: ['documents' => [$invoice->jsonSerialize()]],
             method: HttpMethod::POST
         );
 
-        return InvoiceImport::fill($response['response']->data);
+        return InvoiceImport::fill($response->data());
     }
 
     /**
-     * @throws ResponseException
-     * @throws UnexpectedErrorException
-     * @throws ScopeException
-     * @throws AuthenticationException
+     * @throws AbaNinjaException
      * @throws UnknownFormatException
      */
-    public function getInvoiceByUuid(string $uuid): Invoice
+    public function getInvoiceByUuid(Uuid $uuid): Invoice
     {
         $response = $this->client->send(
-            url: '/accounts/' . $this->accountUuid . '/documents/v2/invoices/' . $uuid,
+            url: $this->accountPath('documents/v2/invoices/' . $uuid->toRfc4122()),
             method: HttpMethod::GET
         );
 
-        return Invoice::fill($response['response']->data);
+        return Invoice::fill($response->data());
     }
 
     /**
-     * @throws ResponseException
-     * @throws UnexpectedErrorException
-     * @throws ScopeException
-     * @throws AuthenticationException
+     * @return array<DocumentAction>
+     *
+     * @throws AbaNinjaException
+     * @throws RequiredDataMissingException if the invoice has no uuid
      */
     public function availableActions(Invoice $invoice): array
     {
         $response = $this->client->send(
-            url: '/accounts/' . $this->accountUuid . '/documents/v2/invoices/' . $invoice->uuid . '/actions',
+            url: $this->accountPath('documents/v2/invoices/' . $this->invoiceUuid($invoice) . '/actions'),
             method: HttpMethod::GET
         );
 
-        return DocumentAction::fillAll($response['response']->data);
+        return DocumentAction::fillAll($response->data());
     }
 
     /**
-     * @throws AuthenticationException
-     * @throws ResponseException
-     * @throws ScopeException
-     * @throws UnexpectedErrorException
+     * @throws AbaNinjaException
+     * @throws RequiredDataMissingException if the invoice has no uuid
      * @throws WrongStateException
      */
     public function executeAction(Invoice $invoice, DocumentAction $action): void
     {
-        $availableActions = $this->availableActions($invoice);
-        if (!in_array($action, $availableActions)) {
+        if (!in_array($action, $this->availableActions($invoice), true)) {
             throw new WrongStateException('This action is currently not allowed on this invoice', 9802);
         }
 
         $this->client->send(
-            url: '/accounts/' . $this->accountUuid . '/documents/v2/invoices/' . $invoice->uuid . '/actions/' . $action->value,
+            url: $this->accountPath('documents/v2/invoices/' . $this->invoiceUuid($invoice) . '/actions/' . $action->value),
             method: HttpMethod::PATCH
         );
     }

@@ -1,38 +1,34 @@
 <?php
 
-use Dotenv\Dotenv;
-use Stui\AbaNinja\Client;
+declare(strict_types=1);
+
+use Stui\AbaNinja\AbaNinja;
+use Stui\AbaNinja\Enums\SwissState;
 use Stui\AbaNinja\Exceptions\AbaNinjaException;
-use Stui\AbaNinja\Service\Addresses;
+use Stui\AbaNinja\Models\Addresses\Address;
+use Stui\AbaNinja\Models\Addresses\Company;
 
-require '../../vendor/autoload.php';
+/** @var AbaNinja $abaNinja */
+$abaNinja = require __DIR__ . '/../bootstrap.php';
 
-$dotenv = Dotenv::createImmutable('../../');
-$dotenv->load();
+$addressService = $abaNinja->addresses();
 
-$client = new Client(
-    apiKey: $_ENV['API_KEY'],
-    baseUrl: $_ENV['ABANINJA_API_BASE_URL'] // if you want to override the standard API URL
-);
-
-$addressService = new Addresses($client, $_ENV['ACCOUNT_UUID']);
-
-$company = new \Stui\AbaNinja\Models\Addresses\Company();
+$company = new Company();
 $company->companyName = 'Testadresse ' . time();
 
-$address = new \Stui\AbaNinja\Models\Addresses\Address();
+$address = new Address();
 $address->address = 'Teststrasse';
 $address->streetNumber = '13a';
 $address->zipCode = '9000';
 $address->city = 'St. Gallen';
 $address->countryCode = 'CH';
-$address->state = \Stui\AbaNinja\Enums\SwissState::SG;
+$address->state = SwissState::SG;
 
 $company->addAddress($address);
 
 try {
     $company = $addressService->createNewCompanyAddress($company, true);
-} catch (AbaNinjaException $e){
+} catch (AbaNinjaException $e) {
     echo $e->getMessage();
     $similarCompanies = $e->getData();
 }

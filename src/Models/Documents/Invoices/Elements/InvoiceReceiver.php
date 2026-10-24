@@ -1,21 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Stui\AbaNinja\Models\Documents\Invoices\Elements;
 
 use JsonSerializable;
 use stdClass;
 use Stui\AbaNinja\Enums\InvoiceReceiverType;
+use Stui\AbaNinja\Exceptions\UnknownFormatException;
 use Stui\AbaNinja\Models\Addresses\Person;
+use Stui\AbaNinja\Support\Uuids;
+use Symfony\Component\Uid\Uuid;
 
 class InvoiceReceiver implements JsonSerializable
 {
     public InvoiceReceiverType $type;
-    public ?string $addressUuid = null;
-    public ?string $personUuid = null;
-    public ?string $companyUuid = null;
-    public ?string $contactPersonUuid = null;
-    public ?string $deliveryAddressUuid = null;
-    /** @var array<Person> $additionalReceivers */
+    public ?Uuid $addressUuid = null;
+    public ?Uuid $personUuid = null;
+    public ?Uuid $companyUuid = null;
+    public ?Uuid $contactPersonUuid = null;
+    public ?Uuid $deliveryAddressUuid = null;
+    /** @var array<Person|Uuid> $additionalReceivers persons, or person uuids when filled from the API */
     public array $additionalReceivers = [];
     public ?string $customerNumber = null;
 
@@ -30,7 +35,7 @@ class InvoiceReceiver implements JsonSerializable
         $this->customerNumber = null;
     }
 
-    public function setPerson(string $personUuid, string $addressUuid, ?string $deliveryAddressUuid = null): void
+    public function setPerson(Uuid $personUuid, Uuid $addressUuid, ?Uuid $deliveryAddressUuid = null): void
     {
         $this->reset();
         $this->type = InvoiceReceiverType::PERSON;
@@ -40,10 +45,10 @@ class InvoiceReceiver implements JsonSerializable
     }
 
     public function setCompany(
-        string        $companyUuid,
-        string        $addressUuid,
-        ?string $contactPersonUuid = null,
-        ?string $deliveryAddressUuid = null
+        Uuid $companyUuid,
+        Uuid $addressUuid,
+        ?Uuid $contactPersonUuid = null,
+        ?Uuid $deliveryAddressUuid = null
     ): void
     {
         $this->reset();
@@ -54,12 +59,15 @@ class InvoiceReceiver implements JsonSerializable
         $this->deliveryAddressUuid = $deliveryAddressUuid;
     }
 
+    /**
+     * Returns false if the receiver is not a company or the person has no uuid.
+     */
     public function addAdditionalReceiver(Person $person): bool
     {
-        if ($this->type !== $this->type = InvoiceReceiverType::COMPANY) {
+        if (!isset($this->type) || $this->type !== InvoiceReceiverType::COMPANY || $person->uuid === null) {
             return false;
         }
-        $this->additionalReceivers[$person->uuid] = $person;
+        $this->additionalReceivers[$person->uuid->toRfc4122()] = $person;
         return true;
     }
 
@@ -78,33 +86,29 @@ class InvoiceReceiver implements JsonSerializable
         return $this->type->getRequestArray($this);
     }
 
+    /**
+     * @throws UnknownFormatException
+     */
     public static function fill(stdClass $data): self
     {
         $receiver = new self();
 
-        if (isset($data->addressUuid) && isset($data->companyUuid)) {
-            $receiver->type = InvoiceReceiverType::COMPANY;
-            $receiver->addressUuid = $data->addressUuid;
-            $receiver->companyUuid = $data->companyUuid;
-            if (isset($data->contactPersonUuid)) {
-                $receiver->contactPersonUuid = $data->contactPersonUuid;
-            }
-            if (isset($data->deliveryAddressUuid)) {
-                $receiver->deliveryAddressUuid = $data->deliveryAddressUuid;
-            }
-            if (isset($data->additionalReceivers)) {
-                $receiver->additionalReceivers = $data->additionalReceivers;
-            }
-        } else if (isset($data->addressUuid) && isset($data->personUuid)) {
-            $receiver->type = InvoiceReceiverType::PERSON;
-            $receiver->addressUuid = $data->addressUuid;
-            $receiver->personUuid = $data->personUuid;
-            if (isset($data->deliveryAddressUuid)) {
-                $receiver->deliveryAddressUuid = $data->deliveryAddressUuid;
-            }
+        if (isset($data->addressUuid, $data->companyUuid)) {
+            $receiver->setCompany(
+                Uuids::fromApi($data->companyUuid),
+                Uuids::fromApi($data->addressUuid),
+                Uuids::fromApiNullable($data->contactPersonUuid ?? null),
+                Uuids::fromApiNullable($data->deliveryAddressUuid ?? null)
+            );
+            $receiver->additionalReceivers = Uuids::fromApiAll($data->additionalReceivers ?? []);
+        } else if (isset($data->addressUuid, $data->personUuid)) {
+            $receiver->setPerson(
+                Uuids::fromApi($data->personUuid),
+                Uuids::fromApi($data->addressUuid),
+                Uuids::fromApiNullable($data->deliveryAddressUuid ?? null)
+            );
         } else {
-            $receiver->type = InvoiceReceiverType::CUSTOMER_NUMBER;
-            $receiver->customerNumber = $data->customerNumber;
+            $receiver->setCustomerNumber($data->customerNumber);
         }
 
         return $receiver;

@@ -1,20 +1,32 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Stui\AbaNinja\Models\Addresses;
 
+use stdClass;
 use Stui\AbaNinja\Enums\AddressType;
+use Stui\AbaNinja\Exceptions\UnknownFormatException;
 
 class PersonOrCompany
 {
-    public static function fillAll(array $data): array
+    /**
+     * @param iterable<stdClass> $data
+     *
+     * @return array<Person|Company>
+     *
+     * @throws UnknownFormatException
+     */
+    public static function fillAll(iterable $data): array
     {
         $entries = [];
 
         foreach ($data as $entry) {
-            if ($entry->type === AddressType::COMPANY) {
+            $type = AddressType::tryFrom($entry->type ?? '');
+            if ($type === AddressType::COMPANY) {
                 $entries[] = Company::fill($entry);
             }
-            if ($entry->type === AddressType::PERSON) {
+            if ($type === AddressType::PERSON) {
                 $entries[] = Person::fill($entry);
             }
         }

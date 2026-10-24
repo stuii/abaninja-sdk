@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Stui\AbaNinja\Models\Documents\Invoices;
 
 use stdClass;
 use Stui\AbaNinja\Exceptions\UnknownFormatException;
+use Symfony\Component\Uid\Uuid;
 
 class Invoice
 {
-    public ?string $uuid;
+    public ?Uuid $uuid = null;
 
     /**
      * @throws UnknownFormatException

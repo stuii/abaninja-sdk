@@ -1,87 +1,68 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Stui\AbaNinja\Service;
 
-use Stui\AbaNinja\Client;
 use Stui\AbaNinja\Enums\HttpMethod;
-use Stui\AbaNinja\Exceptions\AuthenticationException;
-use Stui\AbaNinja\Exceptions\ResponseException;
-use Stui\AbaNinja\Exceptions\ScopeException;
-use Stui\AbaNinja\Exceptions\UnexpectedErrorException;
+use Stui\AbaNinja\Exceptions\AbaNinjaException;
 use Stui\AbaNinja\Models\Settings\Webhook;
+use Symfony\Component\Uid\Uuid;
 
-readonly class Webhooks
+readonly class Webhooks extends Service
 {
-    public function __construct(
-        private Client $client,
-        private string $accountUuid
-    ) {
-    }
-
     /**
-     * @throws UnexpectedErrorException
-     * @throws ResponseException
-     * @throws ScopeException
-     * @throws AuthenticationException
+     * @return array<Webhook>
      *
-     * @return array<array-key, Webhook>
+     * @throws AbaNinjaException
      */
     public function getAllWebhooks(): array
     {
         $response = $this->client->send(
-            url: '/accounts/' . $this->accountUuid . '/webhooks/v2/outgoing-webhooks',
+            url: $this->accountPath('webhooks/v2/outgoing-webhooks'),
             method: HttpMethod::GET
         );
 
-        return Webhook::fillAll($response['response']->data);
+        return Webhook::fillAll($response->data() ?? []);
     }
 
     /**
-     * @throws UnexpectedErrorException
-     * @throws ResponseException
-     * @throws ScopeException
-     * @throws AuthenticationException
+     * @throws AbaNinjaException
      */
-    public function getSingleWebhook(string $uuid): Webhook
+    public function getSingleWebhook(Uuid $uuid): Webhook
     {
         $response = $this->client->send(
-            url: '/accounts/' . $this->accountUuid . '/webhooks/v2/outgoing-webhooks/' . $uuid,
+            url: $this->accountPath('webhooks/v2/outgoing-webhooks/' . $uuid->toRfc4122()),
             data: ['showSignatureKey' => true],
             method: HttpMethod::GET
         );
 
-        return Webhook::fill($response['response']->data);
+        return Webhook::fill($response->data());
     }
 
     /**
-     * @throws UnexpectedErrorException
-     * @throws ResponseException
-     * @throws ScopeException
-     * @throws AuthenticationException
+     * @throws AbaNinjaException
      */
-    public function deleteWebhook(string $uuid): void
+    public function deleteWebhook(Uuid $uuid): void
     {
-        $response = $this->client->send(
-            url: '/accounts/' . $this->accountUuid . '/webhooks/v2/outgoing-webhooks/' . $uuid,
+        $this->client->send(
+            url: $this->accountPath('webhooks/v2/outgoing-webhooks/' . $uuid->toRfc4122()),
             method: HttpMethod::DELETE
         );
     }
 
     /**
-     * @throws UnexpectedErrorException
-     * @throws ResponseException
-     * @throws ScopeException
-     * @throws AuthenticationException
+     * @throws AbaNinjaException
      */
     public function createWebhook(Webhook $webhook): Webhook
     {
         $response = $this->client->send(
-            url: '/accounts/' . $this->accountUuid . '/webhooks/v2/outgoing-webhooks',
+            url: $this->accountPath('webhooks/v2/outgoing-webhooks'),
             data: $webhook->jsonSerialize(),
             method: HttpMethod::POST
         );
 
-        return Webhook::fill($response['response']->data);
+        return Webhook::fill($response->data());
     }
 
     public function validateSignature(string $payload, string $signatureKey, string $expectedHash): bool

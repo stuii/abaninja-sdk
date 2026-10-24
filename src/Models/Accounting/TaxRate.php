@@ -1,35 +1,45 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Stui\AbaNinja\Models\Accounting;
 
+use JsonSerializable;
 use stdClass;
+use Stui\AbaNinja\Exceptions\UnknownFormatException;
+use Stui\AbaNinja\Models\Concerns\FillsCollections;
+use Stui\AbaNinja\Support\Uuids;
+use Symfony\Component\Uid\Uuid;
 
-class TaxRate
+class TaxRate implements JsonSerializable
 {
-    public string $uuid;
+    use FillsCollections;
+
+    public Uuid $uuid;
     public float $rate;
-    public bool $isInactive;
+    public bool $isInactive = false;
 
 
+    /**
+     * @throws UnknownFormatException
+     */
     public static function fill(stdClass $data): self
     {
         $taxRate = new self();
 
-        $taxRate->uuid = $data->uuid;
-        $taxRate->rate = $data->rate;
-        $taxRate->isInactive = $data->isInactive;
+        $taxRate->uuid = Uuids::fromApi($data->uuid);
+        $taxRate->rate = (float) $data->rate;
+        $taxRate->isInactive = $data->isInactive ?? false;
 
         return $taxRate;
     }
 
-    public static function fillAll(array $data): array
+    public function jsonSerialize(): array
     {
-        $taxRates = [];
-
-        foreach ($data as $entry) {
-            $taxRates[] = self::fill($entry);
-        }
-
-        return $taxRates;
+        return [
+            'uuid' => $this->uuid->toRfc4122(),
+            'rate' => $this->rate,
+            'isInactive' => $this->isInactive,
+        ];
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Stui\AbaNinja\Models\Documents\PaymentInstructions;
 
-use JsonSerializable;
-
-class QrIbanPaymentInstructions extends PaymentInstructions implements JsonSerializable
+class QrIbanPaymentInstructions extends PaymentInstructions
 {
     public string $qrIban;
 
